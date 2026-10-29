@@ -57,6 +57,33 @@ fn startup_file() -> Option<String> {
         .find(|arg| !arg.starts_with('-') && arg.ends_with(".json"))
 }
 
+/// How the window starts, from the command line, for documentation screenshots:
+/// `--keyboard 2 --pair 9 --settings` (and `--about` for the About window).
+#[derive(Serialize, Default)]
+struct StartupView {
+    keyboard: Option<u8>,
+    /// Key pair 1 to 16.
+    pair: Option<u8>,
+    settings: bool,
+}
+
+fn arg_value(name: &str) -> Option<u8> {
+    let args: Vec<String> = std::env::args().collect();
+    args.iter()
+        .position(|arg| arg == name)
+        .and_then(|index| args.get(index + 1))
+        .and_then(|value| value.parse().ok())
+}
+
+#[tauri::command]
+fn startup_view() -> StartupView {
+    StartupView {
+        keyboard: arg_value("--keyboard"),
+        pair: arg_value("--pair"),
+        settings: std::env::args().any(|arg| arg == "--settings"),
+    }
+}
+
 #[tauri::command]
 fn new_layout() -> Layout {
     let mut layout = Layout::default();
@@ -289,6 +316,12 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .menu(build_menu)
+        .setup(|app| {
+            if std::env::args().any(|arg| arg == "--about") {
+                show_about(app.handle())?;
+            }
+            Ok(())
+        })
         .on_menu_event(|app, event| {
             let id = event.id().as_ref();
             if id == "quit" {
@@ -316,6 +349,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             startup_file,
+            startup_view,
             new_layout,
             open_layout,
             save_layout,

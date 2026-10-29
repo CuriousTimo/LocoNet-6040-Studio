@@ -25,6 +25,19 @@ LocoNet 6040 Studio is the setup program for [Marklin-6040-LocoNet](https://gith
 - **Export backup:** the setup as the list of commands the Nano understands, the same text as its `backup` command, to keep or to type in on the Serial Monitor.
 - **Export KeyMap.h:** the setup as a file for the Arduino IDE, for those who load the program themselves.
 
+## A look inside
+
+The picture at the top shows Keyboard 2, "Adorf station", with key pair 1 selected: it switches turnout 101, and on the right you see the same turnout as Rocrail's PADA, MADA and FADA. Next to the Keyboard's number, the four switches on its back are drawn as they must be set.
+
+| | |
+| --- | --- |
+| ![A key pair that shows a track section](docs/track-section.png) | ![A Keyboard with the automatic numbering](docs/automatic.png) |
+| **A track section.** Key pair 10 shows track section 34: its lamps are red while a train is there, green when the track is free. | **Automatic numbering.** Keyboard 1 switches turnouts 1 to 16 without any setup; all four switches on its back are off. |
+
+![The settings of the Nano](docs/settings.png)
+
+**Settings.** The layout's name and the settings of the Nano, each with a plain explanation. Most layouts never change them.
+
 ## How to use it
 
 1. Connect the Nano with its USB cable.
@@ -63,6 +76,8 @@ You need [Rust](https://rustup.rs). On Linux also the libraries Tauri needs (`li
 cargo test -p l6040-core                  # the layout, backup and KeyMap.h code
 cargo run -p loconet-6040-studio          # start the app
 cargo run -p loconet-6040-studio -- "examples/Adorf station.json"   # start with the example
+cargo run -p loconet-6040-studio -- "examples/Adorf station.json" --keyboard 2 --pair 10 --settings
+                                          # start on a Keyboard and key pair, for screenshots
 cargo install tauri-cli --version "^2"    # once, for installers
 cd app/src-tauri && cargo tauri build     # installers in target/release/bundle
 ```

@@ -611,6 +611,10 @@ document.addEventListener('contextmenu', (ev) => {
       setStatus(String(error), 'bad');
     }
   }
+  const view = await invoke('startup_view');
+  if (view.keyboard && keyboard(view.keyboard)) st.keyboard = view.keyboard;
+  if (view.pair >= 1 && view.pair <= 16) st.pair = view.pair - 1;
+  st.settings = view.settings;
   st.ports = await invoke('list_ports');
   if (!st.ports.some((p) => p.name === st.port)) st.port = st.ports.find((p) => p.usb)?.name || '';
   render();
