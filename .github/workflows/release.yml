@@ -49,18 +49,34 @@ jobs:
             os: macos-latest
             target: x86_64-apple-darwin
             bundles: app,dmg
-          - name: Windows
+          - name: Windows x64
             os: windows-latest
             target: x86_64-pc-windows-msvc
             bundles: nsis
-          - name: Linux deb
+          # Windows on ARM (Snapdragon laptops), cross-built on the x64 runner as Tauri documents
+          - name: Windows ARM64
+            os: windows-latest
+            target: aarch64-pc-windows-msvc
+            bundles: nsis
+          - name: Linux x64 deb
             os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             bundles: deb
           # RPM doesn't allow "-" in versions: 0.1.0-beta.1 becomes version 0.1.0, release 0.beta.1
-          - name: Linux rpm
+          - name: Linux x64 rpm
             os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
+            bundles: rpm
+            rpm: true
+          # 64-bit ARM: Raspberry Pi 4 and 5 with 64-bit Raspberry Pi OS, other ARM boards;
+          # built natively on GitHub's ARM runners
+          - name: Linux ARM64 deb
+            os: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+            bundles: deb
+          - name: Linux ARM64 rpm
+            os: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
             bundles: rpm
             rpm: true
     runs-on: ${{ matrix.os }}

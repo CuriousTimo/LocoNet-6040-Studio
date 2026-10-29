@@ -54,9 +54,10 @@ The Nano restarts each time the Studio connects to it; that takes about two seco
 
 Download the installer for your computer from the [Releases](https://github.com/CuriousTimo/LocoNet-6040-Studio/releases) page (there are none yet; until then, build it from the source code below):
 
-- **Windows:** `LocoNet 6040 Studio_x.y.z_x64-setup.exe`. Windows may warn that the program is from an unknown publisher: choose **More info → Run anyway**.
+- **Windows:** `…_x64-setup.exe` for most PCs, `…_arm64-setup.exe` for Windows on ARM (for example Snapdragon laptops). Windows may warn that the program is from an unknown publisher: choose **More info → Run anyway**.
 - **macOS:** the `.dmg` for Apple Silicon (`aarch64`, Macs from 2020 on) or Intel (`x64`). Open it and drag LocoNet 6040 Studio to Applications.
-- **Linux:** `.deb` (Debian, Ubuntu, Raspberry Pi OS) or `.rpm` (Fedora, openSUSE).
+- **Linux:** `.deb` (Debian, Ubuntu) or `.rpm` (Fedora, openSUSE), each for ordinary PCs (`amd64` / `x86_64`) and for 64-bit ARM (`arm64` / `aarch64`).
+- **Raspberry Pi:** the 64-bit ARM `.deb`, on a Raspberry Pi 4 or 5 with the 64-bit Raspberry Pi OS. Install it with `sudo apt install ./LocoNet*arm64.deb`.
 
 ### The first start on a Mac
 
