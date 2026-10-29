@@ -14,7 +14,7 @@ pub fn to_keymap_h(layout: &Layout) -> String {
         out.push_str("const bool kUseKeyMap = false;\n\n");
         out.push_str(STRUCT);
         out.push_str("const KeyMapLine kKeyMap[] PROGMEM = {\n");
-        out.push_str("    {0, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}},\n");
+        out.push_str("    {1, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}},\n");
     } else {
         out.push_str("const bool kUseKeyMap = true;\n\n");
         out.push_str(STRUCT);
@@ -58,7 +58,8 @@ const HEADER: &str = "\
 // together with the Marklin-6040-LocoNet program; see its README, \"Another way: write it
 // down in a file\". The options are not in this file; they stay as they are on the Nano.
 //
-// One line per Keyboard: its number (0 to 15), then its 16 key pairs from left to right:
+// One line per Keyboard: its number (1 to 16, as in Märklin's switch table), then its 16
+// key pairs in the order printed on the Keyboard (1 to 8 on top, 9 to 16 below):
 // a turnout (1 to 2048), 0 for nothing, or SENSOR(33) for a track section (1 to 4096).
 
 #ifndef KEY_MAP_H
@@ -86,8 +87,8 @@ mod tests {
     #[test]
     fn writes_one_line_per_keyboard() {
         let mut layout = Layout::default();
-        layout.keyboard_mut(0);
-        let station = layout.keyboard_mut(1);
+        layout.keyboard_mut(1);
+        let station = layout.keyboard_mut(2);
         station.automatic = false;
         station.name = "Adorf".to_owned();
         station.keys = std::array::from_fn(|pair| Key::Turnout(101 + pair as u16));
@@ -97,11 +98,11 @@ mod tests {
         let text = to_keymap_h(&layout);
         assert!(text.contains("const bool kUseKeyMap = true;"));
         assert!(
-            text.contains("    {0, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}},\n")
+            text.contains("    {1, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}},\n")
         );
-        assert!(text.contains("    // Keyboard 1: Adorf\n    //   key pair 11: Track 1\n"));
+        assert!(text.contains("    // Keyboard 2: Adorf\n    //   key pair 11: Track 1\n"));
         assert!(text.contains(
-            "    {1, {101, 102, 103, 104, 105, 106, 107, 108, 109, 0, SENSOR(33), 112, 113, 114, 115, 116}},\n"
+            "    {2, {101, 102, 103, 104, 105, 106, 107, 108, 109, 0, SENSOR(33), 112, 113, 114, 115, 116}},\n"
         ));
         assert!(text.ends_with("};\n\n#endif\n"));
     }
@@ -111,7 +112,7 @@ mod tests {
         let text = to_keymap_h(&Layout::default());
         assert!(text.contains("const bool kUseKeyMap = false;"));
         assert!(
-            text.contains("kKeyMap[] PROGMEM = {\n    {0, {"),
+            text.contains("kKeyMap[] PROGMEM = {\n    {1, {"),
             "never an empty array"
         );
     }

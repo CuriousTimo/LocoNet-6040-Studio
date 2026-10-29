@@ -18,8 +18,21 @@ use crate::model::{Key, Keyboard, Layout, Options, KEYBOARDS, KEY_PAIRS};
 /// The line the firmware ends its backup with.
 pub const END: &str = "# end of backup";
 
+/// The oldest firmware the Studio works with: 0.2.0 numbers Keyboards 1 to 16 as Märklin
+/// does; 0.1.x counted 0 to 15, so its numbers would all be one off.
+pub const OLDEST_FIRMWARE: (u32, u32) = (0, 2);
+
+/// Whether the Studio can work with this firmware version ("0.2.0").
+pub fn firmware_supported(version: &str) -> bool {
+    let mut parts = version.split('.').map(|part| part.parse::<u32>().ok());
+    match (parts.next().flatten(), parts.next().flatten()) {
+        (Some(major), Some(minor)) => (major, minor) >= OLDEST_FIRMWARE,
+        _ => false,
+    }
+}
+
 /// The commands that make the Nano's setup equal to the layout: the options, then every
-/// Keyboard 0 to 15, so a Keyboard the layout does not have goes back to automatic.
+/// Keyboard 1 to 16, so a Keyboard the layout does not have goes back to automatic.
 pub fn to_commands(layout: &Layout) -> Vec<String> {
     let options = &layout.options;
     let on_off = |name: &str, on: bool| format!("option {name} {}", if on { "on" } else { "off" });
@@ -31,7 +44,7 @@ pub fn to_commands(layout: &Layout) -> Vec<String> {
         on_off("watchdog", options.watchdog),
         format!("option coil {}", options.coil_ms),
     ];
-    for number in 0..KEYBOARDS {
+    for number in 1..=KEYBOARDS {
         match layout.keyboard(number) {
             Some(keyboard) if !keyboard.automatic => {
                 let entries: Vec<String> = keyboard.keys.iter().map(|key| key.to_entry()).collect();
@@ -176,7 +189,7 @@ fn read_note(note: &str, firmware: &mut Option<String>, on_the_bus: &mut Vec<u8>
     } else if let Some(rest) = note.strip_prefix("keyboard ") {
         let (number, state) = rest.split_once(':').unwrap_or((rest, ""));
         if let (Ok(number), true) = (number.trim().parse::<u8>(), state.contains("on the bus")) {
-            if number < KEYBOARDS && !on_the_bus.contains(&number) {
+            if (1..=KEYBOARDS).contains(&number) && !on_the_bus.contains(&number) {
                 on_the_bus.push(number);
             }
         }
@@ -185,8 +198,8 @@ fn read_note(note: &str, firmware: &mut Option<String>, on_the_bus: &mut Vec<u8>
 
 fn read_keyboard_number(word: Option<&&str>) -> Result<u8, String> {
     word.and_then(|word| word.parse::<u8>().ok())
-        .filter(|number| *number < KEYBOARDS)
-        .ok_or_else(|| "Keyboards are 0 to 15".to_owned())
+        .filter(|number| (1..=KEYBOARDS).contains(number))
+        .ok_or_else(|| "Keyboards are 1 to 16".to_owned())
 }
 
 fn read_keys(words: &[&str]) -> Result<Keyboard, String> {
@@ -245,7 +258,7 @@ pub fn differences(wanted: &Layout, on_the_nano: &Layout) -> Vec<String> {
     if wanted.options != on_the_nano.options {
         differences.push("The options differ".to_owned());
     }
-    for number in 0..KEYBOARDS {
+    for number in 1..=KEYBOARDS {
         let assignment = |layout: &Layout| match layout.keyboard(number) {
             Some(keyboard) if !keyboard.automatic => Some(keyboard.keys),
             _ => None,
@@ -287,20 +300,20 @@ mod tests {
     /// line in between, as it arrives over USB.
     const FROM_THE_NANO: &str = "\
 > backup
-# Marklin-6040-LocoNet 0.1.0 backup
+# Marklin-6040-LocoNet 0.2.0 backup
 option auto on
 option stopgo off
 option hold on
 option log on
 option watchdog on
 option coil 250
-# keyboard 0: on the bus, automatic
-clear 0
-# keyboard 1: not found, automatic
+# keyboard 1: on the bus, automatic
 clear 1
-KEY: keyboard 0 key 3 green -> LocoNet switch 3 closed: Done
-# keyboard 2: on the bus, own assignment
-keys 2 101 102 103 104 210 106 0 108 s33 110 111 112 113 114 115 116
+# keyboard 2: not found, automatic
+clear 2
+KEY: keyboard 1 key 3 green -> LocoNet switch 3 closed: Done
+# keyboard 3: on the bus, own assignment
+keys 3 101 102 103 104 210 106 0 108 s33 110 111 112 113 114 115 116
 # end of backup
 ";
 
@@ -309,21 +322,21 @@ keys 2 101 102 103 104 210 106 0 108 s33 110 111 112 113 114 115 116
         let parsed = parse(FROM_THE_NANO);
         assert!(parsed.complete);
         assert!(parsed.problems.is_empty(), "{:?}", parsed.problems);
-        assert_eq!(parsed.firmware.as_deref(), Some("0.1.0"));
-        assert_eq!(parsed.on_the_bus, [0, 2]);
+        assert_eq!(parsed.firmware.as_deref(), Some("0.2.0"));
+        assert_eq!(parsed.on_the_bus, [1, 3]);
         assert_eq!(parsed.layout.options.coil_ms, 250);
         let numbers: Vec<u8> = parsed.layout.keyboards.iter().map(|k| k.number).collect();
         assert_eq!(
             numbers,
-            [0, 2],
-            "keyboard 1 is automatic and not on the bus"
+            [1, 3],
+            "keyboard 2 is automatic and not on the bus"
         );
-        let keyboard = parsed.layout.keyboard(2).unwrap();
+        let keyboard = parsed.layout.keyboard(3).unwrap();
         assert!(!keyboard.automatic);
         assert_eq!(keyboard.keys[4], Key::Turnout(210));
         assert_eq!(keyboard.keys[6], Key::Nothing);
         assert_eq!(keyboard.keys[8], Key::Sensor(33));
-        assert!(parsed.layout.keyboard(0).unwrap().automatic);
+        assert!(parsed.layout.keyboard(1).unwrap().automatic);
     }
 
     #[test]
@@ -339,7 +352,7 @@ keys 2 101 102 103 104 210 106 0 108 s33 110 111 112 113 114 115 116
 
     #[test]
     fn names_problems_with_their_line() {
-        let parsed = parse("keys 2 1 2 3\noption coil 99999\nfly away\nclear 20\n");
+        let parsed = parse("keys 2 1 2 3\noption coil 99999\nfly away\nclear 0\n");
         assert!(!parsed.complete);
         assert_eq!(
             parsed.problems,
@@ -347,21 +360,30 @@ keys 2 101 102 103 104 210 106 0 108 s33 110 111 112 113 114 115 116
                 "Line 1 (keys 2 1 2 3): needs 16 key pairs, has 3",
                 "Line 2 (option coil 99999): the coil time is 0 to 12750 ms",
                 "Line 3 (fly away): this is not a backup line",
-                "Line 4 (clear 20): Keyboards are 0 to 15",
+                "Line 4 (clear 0): Keyboards are 1 to 16",
             ]
         );
+    }
+
+    #[test]
+    fn firmware_versions() {
+        assert!(!firmware_supported("0.1.0"));
+        assert!(firmware_supported("0.2.0"));
+        assert!(firmware_supported("0.10.1"));
+        assert!(firmware_supported("1.0.0"));
+        assert!(!firmware_supported("unknown"));
     }
 
     #[test]
     fn differences_are_named() {
         let mut wanted = parse(FROM_THE_NANO).layout;
         let nano = wanted.clone();
-        wanted.keyboard_mut(2).keys[0] = Key::Turnout(99);
+        wanted.keyboard_mut(3).keys[0] = Key::Turnout(99);
         wanted.keyboard_mut(5).automatic = false;
         assert_eq!(
             differences(&wanted, &nano),
             [
-                "Keyboard 2 key pair 1: wanted 99, the Nano has 101",
+                "Keyboard 3 key pair 1: wanted 99, the Nano has 101",
                 "Keyboard 5: the Nano still has the automatic assignment",
             ]
         );

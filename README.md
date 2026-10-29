@@ -30,7 +30,7 @@ LocoNet 6040 Studio is the setup program for [Marklin-6040-LocoNet](https://gith
 1. Connect the Nano with its USB cable.
 2. Start LocoNet 6040 Studio. At the top right, choose the Nano's USB port (press **Refresh** if it is not in the list).
 3. Press **Read from Nano** to start from what the Nano has now, or start with an empty layout.
-4. Choose a Keyboard with the tabs above the picture, or add one with **+ Add**. Its number is the one set with the four switches on the back of the Keyboard (0 to 15).
+4. Choose a Keyboard with the tabs above the picture, or add one with **+ Add**. Its number is the one set with the four switches on the back of the Keyboard, 1 to 16 as in Märklin's table; the Studio draws the switches next to the number.
 5. Choose **Own assignment**, click a key pair and choose what it does. The key pairs are numbered as on the Keyboard: 1 to 8 in the top row, 9 to 16 in the bottom row.
 6. Press **Send to Nano**. The Studio tells you when the Nano has the setup.
 7. **Save** the layout (File → Save) to keep it.

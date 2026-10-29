@@ -60,7 +60,7 @@ fn startup_file() -> Option<String> {
 #[tauri::command]
 fn new_layout() -> Layout {
     let mut layout = Layout::default();
-    layout.keyboard_mut(0);
+    layout.keyboard_mut(1);
     layout
 }
 

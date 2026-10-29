@@ -11,7 +11,7 @@ const st = {
   layout: null,
   path: null, // where the layout is saved, or null
   dirty: false,
-  keyboard: 0, // the Keyboard shown
+  keyboard: 1, // the Keyboard shown, 1 to 16 as Märklin numbers them
   pair: 0, // the key pair selected, 0 to 15
   onBus: [], // Keyboards the Nano found, from the last read
   ports: [],
@@ -27,22 +27,24 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const kindOf = (key) => (typeof key === 'string' ? key : Object.keys(key)[0]);
 const numberOf = (key) => (typeof key === 'string' ? 0 : Object.values(key)[0]);
 const makeKey = (kind, number) => (kind === 'nothing' ? 'nothing' : { [kind]: number });
-const automaticKey = (kb, pair) => ({ turnout: kb * 16 + pair + 1 });
+// Keyboard 1 switches 1 to 16, Keyboard 2 17 to 32 (the firmware's automatic numbering)
+const automaticKey = (kb, pair) => ({ turnout: (kb - 1) * 16 + pair + 1 });
 const effectiveKey = (kb, pair) => (kb.automatic ? automaticKey(kb.number, pair) : kb.keys[pair]);
 // The Keyboard's number is set with the 4 switches on its back, Märklin's "Kodierschalter".
-// All off is the first Keyboard (Märklin's Keyboard 1, here 0); each switch that is on adds
-// its value: switch 1 on gives the second Keyboard, switch 2 the third. Source: the Märklin
+// All off is Keyboard 1; each switch that is on adds its value to it: switch 1 on gives
+// Keyboard 2, switch 2 Keyboard 3. ON is at the top, as on the Keyboard. Source: the Märklin
 // Digital book, table 12.10 "Codeertabel KEYBOARD/SWITCHBOARD" (scan on forum.3rail.nl,
 // topic 95205); the 6040 table on marklinisterne.dk agrees.
 const DIP_SWITCH_VALUES = [1, 2, 4, 8]; // switch 1, 2, 3, 4
 
 /// The switch block on the back of the Keyboard, set for this number.
 function dipSwitches(number) {
+  const set = number - 1; // Keyboard 1 is all off
   const switches = DIP_SWITCH_VALUES.map((value, i) => {
-    const on = (number & value) !== 0;
+    const on = (set & value) !== 0;
     return `<span class="sw ${on ? 'on' : ''}" title="Switch ${i + 1}: ${on ? 'ON' : 'off'}"><span class="knob"></span></span>`;
   }).join('');
-  const onList = DIP_SWITCH_VALUES.map((v, i) => ((number & v) ? i + 1 : null)).filter(Boolean);
+  const onList = DIP_SWITCH_VALUES.map((v, i) => ((set & v) ? i + 1 : null)).filter(Boolean);
   const tip = `Switches on the back of the Keyboard: ${onList.length ? `${onList.join(', ')} ON, the others off` : 'all off'}`;
   return `
     <span class="dip" title="${tip}">
@@ -189,7 +191,7 @@ function renderTabs() {
         </button>`;
     })
     .join('');
-  const free = [...Array(16).keys()].filter((n) => !keyboard(n));
+  const free = [...Array(16).keys()].map((i) => i + 1).filter((n) => !keyboard(n));
   const add = free.length
     ? `<span class="tab-add">
          <select class="select" id="add-kb" title="The number set with the switches on the back of the Keyboard">${free.map((n) => `<option value="${n}">Keyboard ${n}</option>`).join('')}</select>
@@ -209,7 +211,7 @@ function renderOptions() {
   return `
     <section>
       <h2>Settings of the Nano</h2>
-      ${box('auto_assign', 'Automatic numbering', 'Keyboards not set up here switch 16 turnouts in a row: Keyboard 0 switches 1 to 16, Keyboard 1 17 to 32.')}
+      ${box('auto_assign', 'Automatic numbering', 'Keyboards not set up here switch 16 turnouts in a row: Keyboard 1 switches 1 to 16, Keyboard 2 17 to 32.')}
       ${box('hold_without_power', 'No keys without track power', 'A key is not sent while the track power is off.')}
       ${box('stop_go', 'Märklin STOP and GO', 'The STOP and GO lines of the Märklin bus switch the LocoNet track power. Only after measuring them.')}
       ${box('log', 'Log on the Serial Monitor', 'The Nano writes a line for every key and switch command.')}
@@ -257,7 +259,7 @@ function renderMain() {
       return `<div class="krow">${cells}</div>`;
     })
     .join('');
-  const first = kb.number * 16 + 1;
+  const first = (kb.number - 1) * 16 + 1;
   return `
     ${renderTabs()}
     <div class="kb-head">
@@ -348,7 +350,7 @@ document.addEventListener('click', async (ev) => {
     const ok = await dialog.ask(`Remove Keyboard ${st.keyboard} from the layout? On the Nano it goes back to automatic numbering.`, { title: 'Remove Keyboard', kind: 'warning' });
     if (!ok) return;
     st.layout.keyboards = st.layout.keyboards.filter((k) => k.number !== st.keyboard);
-    st.keyboard = st.layout.keyboards[0]?.number ?? 0;
+    st.keyboard = st.layout.keyboards[0]?.number ?? 1;
     markDirty();
     render();
   } else if (act === 'mode') {
@@ -375,7 +377,7 @@ document.addEventListener('change', (ev) => {
   } else if (el.dataset.act === 'kind') {
     const kb = keyboard();
     const old = kb.keys[st.pair];
-    const number = numberOf(old) || (el.value === 'turnout' ? kb.number * 16 + st.pair + 1 : 1);
+    const number = numberOf(old) || (el.value === 'turnout' ? (kb.number - 1) * 16 + st.pair + 1 : 1);
     kb.keys[st.pair] = makeKey(el.value, number);
     markDirty();
     render();
@@ -454,7 +456,7 @@ function takeOver(parsed) {
   parsed.layout.notes = st.layout.notes;
   st.layout = parsed.layout;
   st.onBus = parsed.on_the_bus;
-  st.keyboard = st.layout.keyboards[0]?.number ?? 0;
+  st.keyboard = st.layout.keyboards[0]?.number ?? 1;
   st.pair = 0;
 }
 
@@ -464,7 +466,7 @@ async function command(act) {
       if (!(await confirmDiscard())) return;
       st.layout = await invoke('new_layout');
       st.path = null;
-      st.keyboard = 0;
+      st.keyboard = 1;
       st.pair = 0;
       st.onBus = [];
       markDirty(false);
@@ -475,7 +477,7 @@ async function command(act) {
       if (!path) return;
       st.layout = await invoke('open_layout', { path });
       st.path = path;
-      st.keyboard = st.layout.keyboards[0]?.number ?? 0;
+      st.keyboard = st.layout.keyboards[0]?.number ?? 1;
       st.pair = 0;
       st.onBus = [];
       markDirty(false);
@@ -604,7 +606,7 @@ document.addEventListener('contextmenu', (ev) => {
     try {
       st.layout = await invoke('open_layout', { path });
       st.path = path;
-      st.keyboard = st.layout.keyboards[0]?.number ?? 0;
+      st.keyboard = st.layout.keyboards[0]?.number ?? 1;
     } catch (error) {
       setStatus(String(error), 'bad');
     }

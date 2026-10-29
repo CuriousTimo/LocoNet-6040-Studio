@@ -3,7 +3,8 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Keyboards are numbered 0 to 15 with the switches on their back.
+/// Keyboards are numbered 1 to 16, as Märklin does (the Keyboard's manual and the switch
+/// table for the four switches on its back: all off is Keyboard 1).
 pub const KEYBOARDS: u8 = 16;
 /// Key pairs per Keyboard, numbered 1 to 16 from the left.
 pub const KEY_PAIRS: usize = 16;
@@ -67,9 +68,10 @@ impl Key {
 /// One Keyboard 6040.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Keyboard {
-    /// 0 to 15, as set with the switches on its back.
+    /// 1 to 16, as Märklin numbers it and as set with the switches on its back.
     pub number: u8,
-    /// Automatic: the firmware's own numbering, number × 16 + 1 to + 16. Otherwise `keys`.
+    /// Automatic: the firmware's own numbering, Keyboard 1 switches 1 to 16, Keyboard 2 17
+    /// to 32. Otherwise `keys`.
     pub automatic: bool,
     pub keys: [Key; KEY_PAIRS],
     /// A name for the whole Keyboard, for example the station it controls.
@@ -92,9 +94,10 @@ impl Keyboard {
         }
     }
 
-    /// The firmware's automatic assignment: Keyboard n switches n × 16 + 1 to n × 16 + 16.
+    /// The firmware's automatic assignment: Keyboard n switches (n − 1) × 16 + 1 to n × 16.
     pub fn automatic_keys(number: u8) -> [Key; KEY_PAIRS] {
-        std::array::from_fn(|pair| Key::Turnout(u16::from(number) * 16 + pair as u16 + 1))
+        let first = u16::from(number.saturating_sub(1)) * 16 + 1;
+        std::array::from_fn(|pair| Key::Turnout(first + pair as u16))
     }
 
     /// What the key pairs do on the Nano: the automatic assignment or the own one.
@@ -110,7 +113,7 @@ impl Keyboard {
 /// The Nano's options, as `option` sets them on the terminal.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Options {
-    /// Keyboards without their own assignment switch number × 16 + 1 to + 16.
+    /// Keyboards without their own assignment switch 16 turnouts in a row.
     pub auto_assign: bool,
     /// The Märklin bus STOP and GO lines switch LocoNet power.
     pub stop_go: bool,
@@ -221,14 +224,14 @@ impl Layout {
         let mut problems = Vec::new();
         let mut seen = [false; KEYBOARDS as usize];
         for keyboard in &self.keyboards {
-            if keyboard.number >= KEYBOARDS {
+            if !(1..=KEYBOARDS).contains(&keyboard.number) {
                 problems.push(format!(
-                    "Keyboard {}: Keyboards are 0 to 15",
+                    "Keyboard {}: Keyboards are 1 to 16",
                     keyboard.number
                 ));
                 continue;
             }
-            if std::mem::replace(&mut seen[keyboard.number as usize], true) {
+            if std::mem::replace(&mut seen[keyboard.number as usize - 1], true) {
                 problems.push(format!("Keyboard {} is there twice", keyboard.number));
             }
             if keyboard.automatic {
@@ -276,9 +279,11 @@ mod tests {
 
     #[test]
     fn automatic_keys_follow_the_firmware() {
+        assert_eq!(Keyboard::automatic_keys(1)[0], Key::Turnout(1));
         let keys = Keyboard::automatic_keys(2);
-        assert_eq!(keys[0], Key::Turnout(33));
-        assert_eq!(keys[15], Key::Turnout(48));
+        assert_eq!(keys[0], Key::Turnout(17));
+        assert_eq!(keys[15], Key::Turnout(32));
+        assert_eq!(Keyboard::automatic_keys(16)[15], Key::Turnout(256));
     }
 
     #[test]
@@ -291,8 +296,8 @@ mod tests {
         keyboard.automatic = false;
         keyboard.keys[8] = Key::Sensor(33);
         keyboard.key_names[8] = "Track 1".to_owned();
-        layout.keyboard_mut(0);
-        assert_eq!(layout.keyboards[0].number, 0, "sorted by number");
+        layout.keyboard_mut(1);
+        assert_eq!(layout.keyboards[0].number, 1, "sorted by number");
         let opened = Layout::from_json(&layout.to_json()).unwrap();
         assert_eq!(opened, layout);
     }

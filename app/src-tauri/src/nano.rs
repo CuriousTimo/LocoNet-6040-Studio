@@ -87,9 +87,14 @@ impl Nano {
             let answer = nano.exchange("version")?;
             nano.note_version(&answer);
         }
-        if nano.firmware.is_none() {
+        let Some(version) = nano.firmware.clone() else {
             return Err(format!(
                 "No Marklin-6040-LocoNet answers on {name}. Is it the right port, and is the program loaded onto the Nano?"
+            ));
+        };
+        if !l6040_core::backup::firmware_supported(&version) {
+            return Err(format!(
+                "The Nano has Marklin-6040-LocoNet {version}. LocoNet 6040 Studio needs version 0.2.0 or newer, which numbers the Keyboards 1 to 16 as Märklin does: load the newer program onto the Nano first."
             ));
         }
         Ok(nano)
