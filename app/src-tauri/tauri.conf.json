@@ -34,6 +34,9 @@
       "icons/icon.ico"
     ],
     "category": "Utility",
+    "macOS": {
+      "signingIdentity": "-"
+    },
     "shortDescription": "Set up Märklin Keyboards 6040 on LocoNet",
     "copyright": "Curious Timo"
   }

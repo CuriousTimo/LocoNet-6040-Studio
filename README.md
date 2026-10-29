@@ -37,7 +37,21 @@ The Nano restarts each time the Studio connects to it; that takes about two seco
 
 ## Download
 
-There are no ready-made downloads yet. Until then, the Studio is built from the source code (below).
+Download the installer for your computer from the [Releases](https://github.com/CuriousTimo/LocoNet-6040-Studio/releases) page (there are none yet; until then, build it from the source code below):
+
+- **Windows:** `LocoNet 6040 Studio_x.y.z_x64-setup.exe`. Windows may warn that the program is from an unknown publisher: choose **More info → Run anyway**.
+- **macOS:** the `.dmg` for Apple Silicon (`aarch64`, Macs from 2020 on) or Intel (`x64`). Open it and drag LocoNet 6040 Studio to Applications.
+- **Linux:** `.deb` or `.AppImage`.
+
+### The first start on a Mac
+
+The Studio is a free hobby program without a paid Apple developer certificate, so the first time macOS says it cannot check the app ("unidentified developer"). The app is fine; you only need to allow it once:
+
+1. Double-click LocoNet 6040 Studio. macOS shows the warning; click **Done** (or **OK**).
+2. Open **System Settings → Privacy & Security** and scroll down. Next to "LocoNet 6040 Studio was blocked", click **Open Anyway**, and confirm with your password.
+3. From then on it starts like any other program.
+
+On macOS 14 (Sonoma) and older, right-clicking the app and choosing **Open** does the same.
 
 ## Building from source
 
@@ -61,6 +75,8 @@ The code:
 The Studio talks to the Nano with the same commands a person types on the Serial Monitor (`backup`, `keys`, `clear`, `option`), one at a time, waiting for each answer. See the firmware's README for the commands.
 
 ## Planned
+
+- Installers signed with an Apple Developer ID and a Windows certificate, so the warnings above go away
 
 - Loading the Marklin-6040-LocoNet program onto a new Nano from the Studio, without the Arduino IDE
 - Ready-made downloads for Windows, macOS and Linux
