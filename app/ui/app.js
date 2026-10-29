@@ -88,8 +88,10 @@ async function fillAddresses() {
   const kb = st.layout && keyboard();
   if (!el || !kb) return;
   const key = effectiveKey(kb, st.pair);
-  if (kindOf(key) !== 'turnout') return;
-  const a = await invoke('rocrail_addresses', { turnout: numberOf(key) });
+  // For a track section or nothing the table is filled for turnout 1 but kept invisible,
+  // so it still takes its room.
+  const turnout = kindOf(key) === 'turnout' ? numberOf(key) : 1;
+  const a = await invoke('rocrail_addresses', { turnout });
   if (!document.body.contains(el)) return;
   el.innerHTML = `
     <div class="addr-title">This turnout in other programs</div>
@@ -206,7 +208,9 @@ function renderMain() {
     return `${renderTabs()}<div class="empty">Add a Keyboard with <b>+ Add</b> above, or choose <b>Read from Nano</b> to take over the setup of your Nano.</div>`;
   }
   // As on the real Keyboard 6040: two rows of 8 key pairs, 1 to 8 on top, 9 to 16 below;
-  // each pair is a red key, its number, and a green key.
+  // each pair is a red key with its red LED above it to the right, its number, and a green
+  // key. The LED is lit for thrown (red) and off for closed (green); here it is off, as
+  // the Studio does not know the turnouts' positions.
   const pairs = [0, 1]
     .map((row) => {
       const cells = [...Array(8).keys()]
@@ -219,7 +223,7 @@ function renderMain() {
             : '<span class="chip none">—</span>';
           return `
             <div class="pair ${pair === st.pair ? 'sel' : ''} ${kind === 'nothing' ? 'off' : ''}" data-act="pick-pair" data-pair="${pair}" title="${esc(kb.key_names[pair])}">
-              <span class="key red"></span>
+              <span class="key-wrap"><span class="led" title="Lit when the turnout is thrown (red)"></span><span class="key red"></span></span>
               <span class="no">${pair + 1}</span>
               <span class="key green"></span>
               ${chip}
@@ -270,7 +274,10 @@ function renderInspector(kb) {
     sensor: 'This key pair switches nothing. Its lamps show the track section: <b>red</b> when a train is there, <b>green</b> when it is free.',
     nothing: 'This key pair does nothing.',
   }[kind];
-  const number = kind === 'nothing' ? '' : `
+  // Every kind takes the room of a turnout, the largest, so the panel never changes height.
+  const number = kind === 'nothing'
+    ? '<label class="field reserve">Turnout<input class="input" disabled></label>'
+    : `
     <label class="field">${kind === 'turnout' ? 'Turnout (1 to 2048)' : 'Track section (1 to 4096)'}
       <input class="input" type="number" min="1" max="${kind === 'turnout' ? 2048 : 4096}" data-bind="key-number" value="${numberOf(key)}" ${disabled}>
     </label>`;
@@ -283,7 +290,7 @@ function renderInspector(kb) {
         <label class="field">Name (only in this app)<input class="input" data-bind="key-name" value="${esc(kb.key_names[pair])}" placeholder="For example: Entry track 1"></label>
       </div>
       <div class="explain">${explain}</div>
-      ${kind === 'turnout' ? '<div class="addresses" id="addresses"></div>' : ''}
+      <div class="addresses ${kind === 'turnout' ? '' : 'reserve'}" id="addresses"></div>
     </section>`;
 }
 
