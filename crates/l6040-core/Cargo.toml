@@ -1,0 +1,11 @@
+[package]
+name = "l6040-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Layout model, backup format and KeyMap.h export for the Marklin-6040-LocoNet firmware"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true

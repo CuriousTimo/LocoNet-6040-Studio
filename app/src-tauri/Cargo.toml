@@ -1,0 +1,18 @@
+[package]
+name = "loconet-6040-studio"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "LocoNet 6040 Studio: set up Märklin Keyboards 6040 on LocoNet"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+l6040-core = { path = "../../crates/l6040-core" }
+serde.workspace = true
+serde_json.workspace = true
+serialport = "4"
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
