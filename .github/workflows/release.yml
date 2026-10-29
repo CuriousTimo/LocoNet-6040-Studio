@@ -53,10 +53,16 @@ jobs:
             os: windows-latest
             target: x86_64-pc-windows-msvc
             bundles: nsis
-          - name: Linux
+          - name: Linux deb
             os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            bundles: deb,appimage
+            bundles: deb
+          # RPM doesn't allow "-" in versions: 0.1.0-beta.1 becomes version 0.1.0, release 0.beta.1
+          - name: Linux rpm
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundles: rpm
+            rpm: true
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -74,13 +80,24 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: tauri-cli@2
+      - name: RPM version
+        if: matrix.rpm
+        run: |
+          version=$(grep -m1 '^version' Cargo.toml | sed -E 's/version = "(.*)"/\1/')
+          if [[ "$version" == *-* ]]; then
+            # Fedora style pre-release: Version 0.1.0, Release 0.beta.1 (older than the final 0.1.0-1)
+            echo "{\"version\": \"${version%%-*}\", \"bundle\": {\"linux\": {\"rpm\": {\"release\": \"0.${version#*-}\"}}}}" > "$GITHUB_WORKSPACE/rpm-version.json"
+          else
+            echo "{}" > "$GITHUB_WORKSPACE/rpm-version.json"
+          fi
+          cat "$GITHUB_WORKSPACE/rpm-version.json"
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: app
           tauriScript: cargo tauri
-          args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
+          args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }} ${{ matrix.rpm && format('--config {0}/rpm-version.json', github.workspace) || '' }}
           tagName: ${{ github.ref_name }}
           releaseName: LocoNet 6040 Studio ${{ github.ref_name }}
           releaseBody: Beta, not yet tested with a real Nano. macOS shows "unidentified developer" the first time; see the README, Download.

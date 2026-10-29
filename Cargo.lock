@@ -1900,7 +1900,7 @@ dependencies = [
 
 [[package]]
 name = "l6040-core"
-version = "0.1.0"
+version = "0.1.0-beta.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -2008,7 +2008,7 @@ dependencies = [
 
 [[package]]
 name = "loconet-6040-studio"
-version = "0.1.0"
+version = "0.1.0-beta.1"
 dependencies = [
  "l6040-core",
  "serde",

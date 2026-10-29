@@ -56,7 +56,7 @@ Download the installer for your computer from the [Releases](https://github.com/
 
 - **Windows:** `LocoNet 6040 Studio_x.y.z_x64-setup.exe`. Windows may warn that the program is from an unknown publisher: choose **More info → Run anyway**.
 - **macOS:** the `.dmg` for Apple Silicon (`aarch64`, Macs from 2020 on) or Intel (`x64`). Open it and drag LocoNet 6040 Studio to Applications.
-- **Linux:** `.deb` or `.AppImage`.
+- **Linux:** `.deb` (Debian, Ubuntu, Raspberry Pi OS) or `.rpm` (Fedora, openSUSE).
 
 ### The first start on a Mac
 
