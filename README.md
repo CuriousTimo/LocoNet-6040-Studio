@@ -60,6 +60,7 @@ You need [Rust](https://rustup.rs). On Linux also the libraries Tauri needs (`li
 ```sh
 cargo test -p l6040-core                  # the layout, backup and KeyMap.h code
 cargo run -p loconet-6040-studio          # start the app
+cargo run -p loconet-6040-studio -- "examples/Adorf station.json"   # start with the example
 cargo install tauri-cli --version "^2"    # once, for installers
 cd app/src-tauri && cargo tauri build     # installers in target/release/bundle
 ```

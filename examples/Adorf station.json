@@ -1,0 +1,158 @@
+{
+  "format": "loconet-6040-studio",
+  "version": 1,
+  "name": "Adorf station",
+  "notes": "",
+  "options": {
+    "auto_assign": true,
+    "stop_go": false,
+    "hold_without_power": true,
+    "log": true,
+    "watchdog": true,
+    "coil_ms": 200
+  },
+  "keyboards": [
+    {
+      "number": 0,
+      "automatic": true,
+      "keys": [
+        {
+          "turnout": 1
+        },
+        {
+          "turnout": 2
+        },
+        {
+          "turnout": 3
+        },
+        {
+          "turnout": 4
+        },
+        {
+          "turnout": 5
+        },
+        {
+          "turnout": 6
+        },
+        {
+          "turnout": 7
+        },
+        {
+          "turnout": 8
+        },
+        {
+          "turnout": 9
+        },
+        {
+          "turnout": 10
+        },
+        {
+          "turnout": 11
+        },
+        {
+          "turnout": 12
+        },
+        {
+          "turnout": 13
+        },
+        {
+          "turnout": 14
+        },
+        {
+          "turnout": 15
+        },
+        {
+          "turnout": 16
+        }
+      ],
+      "name": "Fiddle yard",
+      "key_names": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "number": 2,
+      "automatic": false,
+      "keys": [
+        {
+          "turnout": 101
+        },
+        {
+          "turnout": 102
+        },
+        {
+          "turnout": 103
+        },
+        {
+          "turnout": 104
+        },
+        {
+          "turnout": 105
+        },
+        {
+          "turnout": 106
+        },
+        "nothing",
+        "nothing",
+        {
+          "sensor": 33
+        },
+        {
+          "sensor": 34
+        },
+        {
+          "sensor": 35
+        },
+        {
+          "sensor": 36
+        },
+        {
+          "turnout": 210
+        },
+        {
+          "turnout": 211
+        },
+        {
+          "sensor": 40
+        },
+        {
+          "sensor": 41
+        }
+      ],
+      "name": "Adorf station",
+      "key_names": [
+        "Entry west",
+        "Track 1/2",
+        "Track 3",
+        "Siding",
+        "Exit east",
+        "Goods shed",
+        "",
+        "",
+        "Track 1",
+        "Track 2",
+        "Track 3",
+        "Siding",
+        "Signal A",
+        "Signal B",
+        "Block west",
+        "Block east"
+      ]
+    }
+  ]
+}
