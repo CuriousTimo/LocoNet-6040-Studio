@@ -29,6 +29,29 @@ const numberOf = (key) => (typeof key === 'string' ? 0 : Object.values(key)[0]);
 const makeKey = (kind, number) => (kind === 'nothing' ? 'nothing' : { [kind]: number });
 const automaticKey = (kb, pair) => ({ turnout: kb * 16 + pair + 1 });
 const effectiveKey = (kb, pair) => (kb.automatic ? automaticKey(kb.number, pair) : kb.keys[pair]);
+// The Keyboard's number is set with the 4 switches on its back, Märklin's "Kodierschalter".
+// All off is the first Keyboard (Märklin's Keyboard 1, here 0); each switch that is on adds
+// its value: switch 1 on gives the second Keyboard, switch 2 the third. Source: the Märklin
+// Digital book, table 12.10 "Codeertabel KEYBOARD/SWITCHBOARD" (scan on forum.3rail.nl,
+// topic 95205); the 6040 table on marklinisterne.dk agrees.
+const DIP_SWITCH_VALUES = [1, 2, 4, 8]; // switch 1, 2, 3, 4
+
+/// The switch block on the back of the Keyboard, set for this number.
+function dipSwitches(number) {
+  const switches = DIP_SWITCH_VALUES.map((value, i) => {
+    const on = (number & value) !== 0;
+    return `<span class="sw ${on ? 'on' : ''}" title="Switch ${i + 1}: ${on ? 'ON' : 'off'}"><span class="knob"></span></span>`;
+  }).join('');
+  const onList = DIP_SWITCH_VALUES.map((v, i) => ((number & v) ? i + 1 : null)).filter(Boolean);
+  const tip = `Switches on the back of the Keyboard: ${onList.length ? `${onList.join(', ')} ON, the others off` : 'all off'}`;
+  return `
+    <span class="dip" title="${tip}">
+      <span class="dip-on">ON ↑</span>
+      <span class="dip-switches">${switches}</span>
+      <span class="dip-nums"><span>1</span><span>2</span><span>3</span><span>4</span></span>
+    </span>`;
+}
+
 const fileName = (path) => (path ? path.split(/[\\/]/).pop() : 'Not saved yet');
 
 function keyboard(number = st.keyboard) {
@@ -251,7 +274,7 @@ function renderMain() {
     <div class="k6040">
       <div class="face">
         <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
-        <div class="face-top"><span class="window">${esc(kb.name)}</span><span class="face-no">No. ${kb.number}</span></div>
+        <div class="face-top"><span class="window">${esc(kb.name)}</span><span class="face-id"><span class="face-no">No. ${kb.number}</span>${dipSwitches(kb.number)}</span></div>
         <div class="pairs">${pairs}</div>
       </div>
       <div class="base"><span>keyboard</span><span class="muted-ink">red: thrown · green: closed</span></div>

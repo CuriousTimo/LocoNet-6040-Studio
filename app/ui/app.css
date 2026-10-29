@@ -116,6 +116,17 @@ button { cursor: default; }
 .face-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .window { min-width: 110px; max-width: 260px; height: 26px; padding: 0 8px; border: 1px solid #3A3C40; border-radius: 3px; color: #C9CFD6; font-size: 11px; line-height: 24px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .face-no { color: #9A9EA5; font-size: 12px; font-weight: 600; letter-spacing: .04em; }
+/* the switch block on the back of the Keyboard, as Märklin draws it: black, ON at the top,
+   switches 1 to 4 below; a white slider up is ON */
+.face-id { display: inline-flex; align-items: center; gap: 12px; }
+.dip { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; background: #0B0B0C; border: 1px solid #3A3C40; border-radius: 3px; padding: 3px 5px 2px; }
+.dip-on { align-self: flex-start; font-size: 7px; line-height: 1; color: #D9DADC; font-weight: 700; letter-spacing: .04em; }
+.dip-switches { display: flex; gap: 3px; }
+.sw { position: relative; width: 9px; height: 16px; background: #3A3C40; border-radius: 1px; }
+.sw .knob { position: absolute; left: 1px; right: 1px; height: 7px; bottom: 1px; background: #F2F2F2; border-radius: 1px; }
+.sw.on .knob { bottom: auto; top: 1px; }
+.dip-nums { display: flex; gap: 3px; font-size: 8px; line-height: 1; color: #D9DADC; font-family: var(--mono); }
+.dip-nums span { width: 9px; text-align: center; }
 .pairs { display: flex; flex-direction: column; gap: 14px; }
 .krow { display: flex; gap: 8px; }
 .pair { width: 64px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 0 4px; border-radius: 8px; border: 2px solid transparent; }
