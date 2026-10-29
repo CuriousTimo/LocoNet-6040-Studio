@@ -17,6 +17,7 @@ const st = {
   ports: [],
   port: localStorage.getItem('port') || '',
   busy: false,
+  settings: false, // the Settings window is open
   status: { text: 'Ready', kind: '' },
 };
 
@@ -80,15 +81,38 @@ function newKeyboard(number) {
 
 // ---------- rendering ----------
 
+/// The same turnout as the Intellibox and as Rocrail's MADA, PADA and FADA write it, filled
+/// in after each render (the formulas live in l6040-core, rocrail.rs).
+async function fillAddresses() {
+  const el = document.getElementById('addresses');
+  const kb = st.layout && keyboard();
+  if (!el || !kb) return;
+  const key = effectiveKey(kb, st.pair);
+  if (kindOf(key) !== 'turnout') return;
+  const a = await invoke('rocrail_addresses', { turnout: numberOf(key) });
+  if (!document.body.contains(el)) return;
+  el.innerHTML = `
+    <div class="addr-title">This turnout in other programs</div>
+    <table class="addr">
+      <tr><th>Intellibox, IB-Switch, 6040</th><td colspan="3">turnout <b>${a.turnout}</b></td></tr>
+      <tr><th class="h">Rocrail</th><td class="h">Address</td><td class="h">Port</td><td class="h">Gate</td></tr>
+      <tr><th>PADA <span class="muted">turnout number</span></th><td><b>0</b></td><td><b>${a.pada_port}</b></td><td></td></tr>
+      <tr><th>MADA <span class="muted">decoder + port</span></th><td><b>${a.mada_address}</b></td><td><b>${a.mada_port}</b></td><td></td></tr>
+      <tr><th>FADA <span class="muted">outputs from 0</span></th><td><b>${a.fada_address}</b></td><td><b>0</b></td><td><b>0</b></td></tr>
+    </table>
+    <div class="hint">The three Rocrail rows are the same turnout, written three ways. Fill in one of them in the turnout's Interface tab in Rocrail; PADA is the easiest, because its Port is the turnout number.</div>`;
+}
+
 function render() {
   const app = document.getElementById('app');
   app.innerHTML = `
     ${renderTop()}
     <div class="body">
-      <aside class="side">${renderKeyboards()}${renderOptions()}</aside>
       <main class="main">${renderMain()}</main>
     </div>
+    ${st.settings ? renderSettings() : ''}
     <div class="status ${st.status.kind}">${esc(st.status.text)}</div>`;
+  fillAddresses();
 }
 
 function renderTop() {
@@ -103,6 +127,7 @@ function renderTop() {
       <span class="file">${esc(st.layout.name || fileName(st.path))}</span>
       <span class="dirty" style="${st.dirty ? '' : 'display:none'}" title="Not saved"></span>
       <span class="spacer"></span>
+      <button class="btn" data-act="settings" title="The layout's name and the settings of the Nano">Settings</button>
       <select class="select port" data-act="port" title="The USB port of the Nano">${choose}${options}</select>
       <button class="btn" data-act="ports" title="Look for USB ports again">Refresh</button>
       <button class="btn" data-act="read" ${st.busy ? 'disabled' : ''}>Read from Nano</button>
@@ -110,39 +135,43 @@ function renderTop() {
     </header>`;
 }
 
-function renderKeyboards() {
-  const items = [...st.layout.keyboards]
+/// The Settings window: the layout's name and the settings of the Nano, which most
+/// layouts never change.
+function renderSettings() {
+  return `
+    <div class="overlay" data-act="close-settings">
+      <div class="sheet" role="dialog" aria-label="Settings">
+        <section>
+          <h2>Layout</h2>
+          <label class="field">Name<input class="input" data-bind="layout-name" value="${esc(st.layout.name)}" placeholder="For example: Adorf station"></label>
+        </section>
+        ${renderOptions()}
+        <div class="sheet-foot"><button class="btn primary" data-act="close-settings">Done</button></div>
+      </div>
+    </div>`;
+}
+
+/// The Keyboards as tabs above the Keyboard picture, with Add for the numbers still free.
+function renderTabs() {
+  const tabs = [...st.layout.keyboards]
     .sort((a, b) => a.number - b.number)
     .map((kb) => {
-      const sub = kb.automatic ? `switches ${kb.number * 16 + 1} to ${kb.number * 16 + 16}` : 'own assignment';
-      const bus = st.onBus.includes(kb.number) ? '<span class="tag">on the bus</span>' : '';
+      const bus = st.onBus.includes(kb.number) ? '<span class="tab-bus" title="Found on the bus by the Nano"></span>' : '';
       return `
-        <div class="kb-item ${kb.number === st.keyboard ? 'active' : ''}" data-act="pick-kb" data-kb="${kb.number}">
-          <div class="kb-num">${kb.number}</div>
-          <div class="kb-text">
-            <div class="kb-name">${esc(kb.name || `Keyboard ${kb.number}`)}${bus}</div>
-            <div class="kb-sub">${sub}</div>
-          </div>
-        </div>`;
+        <button class="tab ${kb.number === st.keyboard ? 'active' : ''}" data-act="pick-kb" data-kb="${kb.number}" title="Keyboard ${kb.number}">
+          <span class="tab-num">${kb.number}</span>
+          <span class="tab-name">${esc(kb.name || `Keyboard ${kb.number}`)}</span>${bus}
+        </button>`;
     })
     .join('');
   const free = [...Array(16).keys()].filter((n) => !keyboard(n));
   const add = free.length
-    ? `<div class="add-row">
-         <select class="select" id="add-kb">${free.map((n) => `<option value="${n}">Keyboard ${n}</option>`).join('')}</select>
-         <button class="btn" data-act="add-kb">Add</button>
-       </div>`
+    ? `<span class="tab-add">
+         <select class="select" id="add-kb" title="The number set with the switches on the back of the Keyboard">${free.map((n) => `<option value="${n}">Keyboard ${n}</option>`).join('')}</select>
+         <button class="btn" data-act="add-kb">+ Add</button>
+       </span>`
     : '';
-  return `
-    <section>
-      <h2>Layout</h2>
-      <label class="field">Name<input class="input" data-bind="layout-name" value="${esc(st.layout.name)}" placeholder="For example: Adorf station"></label>
-    </section>
-    <section>
-      <h2>Keyboards</h2>
-      <div class="kb-list">${items || '<div class="muted">No Keyboards yet.</div>'}</div>
-      ${add}
-    </section>`;
+  return `<nav class="tabs">${tabs}${add}</nav>`;
 }
 
 function renderOptions() {
@@ -174,7 +203,7 @@ function renderOptions() {
 function renderMain() {
   const kb = keyboard();
   if (!kb) {
-    return `<div class="empty">Add a Keyboard on the left, or choose <b>Read from Nano</b> to take over the setup of your Nano.</div>`;
+    return `${renderTabs()}<div class="empty">Add a Keyboard with <b>+ Add</b> above, or choose <b>Read from Nano</b> to take over the setup of your Nano.</div>`;
   }
   // As on the real Keyboard 6040: two rows of 8 key pairs, 1 to 8 on top, 9 to 16 below;
   // each pair is a red key, its number, and a green key.
@@ -203,6 +232,7 @@ function renderMain() {
     .join('');
   const first = kb.number * 16 + 1;
   return `
+    ${renderTabs()}
     <div class="kb-head">
       <h1>Keyboard ${kb.number}</h1>
       <label class="field">Name<input class="input" data-bind="kb-name" value="${esc(kb.name)}" placeholder="For example: Adorf station"></label>
@@ -213,6 +243,7 @@ function renderMain() {
       <button class="btn danger" data-act="remove-kb">Remove</button>
     </div>
     ${kb.automatic ? `<div class="notice">Automatic: this Keyboard switches turnouts ${first} to ${first + 15}. Choose <b>Own assignment</b> to change what its keys do.</div>` : ''}
+    <div class="work">
     <div class="k6040">
       <div class="face">
         <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
@@ -221,7 +252,8 @@ function renderMain() {
       </div>
       <div class="base"><span>keyboard</span><span class="muted-ink">red: thrown · green: closed</span></div>
     </div>
-    ${renderInspector(kb)}`;
+    ${renderInspector(kb)}
+    </div>`;
 }
 
 function renderInspector(kb) {
@@ -251,6 +283,7 @@ function renderInspector(kb) {
         <label class="field">Name (only in this app)<input class="input" data-bind="key-name" value="${esc(kb.key_names[pair])}" placeholder="For example: Entry track 1"></label>
       </div>
       <div class="explain">${explain}</div>
+      ${kind === 'turnout' ? '<div class="addresses" id="addresses"></div>' : ''}
     </section>`;
 }
 
@@ -260,7 +293,14 @@ document.addEventListener('click', async (ev) => {
   const el = ev.target.closest('[data-act]');
   if (!el || el.tagName === 'SELECT' || el.tagName === 'INPUT') return;
   const act = el.dataset.act;
-  if (act === 'pick-kb') {
+  if (act === 'settings') {
+    st.settings = true;
+    render();
+  } else if (act === 'close-settings') {
+    if (el.classList.contains('overlay') && ev.target !== el) return; // a click inside the window
+    st.settings = false;
+    render();
+  } else if (act === 'pick-kb') {
     st.keyboard = Number(el.dataset.kb);
     st.pair = 0;
     render();
@@ -337,8 +377,10 @@ document.addEventListener('input', (ev) => {
     markDirty();
   } else if (el.dataset.bind === 'kb-name') {
     keyboard().name = el.value;
-    const item = document.querySelector(`.kb-item[data-kb="${st.keyboard}"] .kb-name`);
-    if (item) item.firstChild.textContent = el.value || `Keyboard ${st.keyboard}`;
+    const tab = document.querySelector(`.tab[data-kb="${st.keyboard}"] .tab-name`);
+    if (tab) tab.textContent = el.value || `Keyboard ${st.keyboard}`;
+    const label = document.querySelector('.face .window');
+    if (label) label.textContent = el.value;
     markDirty();
   } else if (el.dataset.bind === 'key-name') {
     keyboard().key_names[st.pair] = el.value;
@@ -514,6 +556,12 @@ async function refreshPorts() {
 listen('menu', (ev) => command(ev.payload));
 listen('close-requested', async () => {
   if (await confirmDiscard()) invoke('close_window');
+});
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape' && st.settings) {
+    st.settings = false;
+    render();
+  }
 });
 document.addEventListener('contextmenu', (ev) => {
   if (!ev.target.closest('input')) ev.preventDefault();

@@ -95,6 +95,12 @@ fn problems(layout: Layout) -> Vec<String> {
     layout.problems()
 }
 
+/// A turnout number as Rocrail's MADA, PADA and FADA write it.
+#[tauri::command]
+fn rocrail_addresses(turnout: u16) -> l6040_core::rocrail::RocrailAddresses {
+    l6040_core::rocrail::addresses(turnout)
+}
+
 #[tauri::command]
 fn list_ports() -> Vec<nano::PortInfo> {
     nano::ports()
@@ -317,6 +323,7 @@ fn main() {
             export_backup,
             export_keymap,
             problems,
+            rocrail_addresses,
             list_ports,
             read_from_nano,
             send_to_nano,

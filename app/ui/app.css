@@ -95,6 +95,18 @@ button { cursor: default; }
 .mode button.on { background: var(--raised); color: var(--accent); font-weight: 600; }
 .notice { padding: 10px 14px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--line); color: var(--text-2); line-height: 1.45; }
 
+/* Keyboards as tabs above the picture */
+.tabs { display: flex; align-items: flex-end; gap: 4px; border-bottom: 1px solid var(--line-2); flex-wrap: wrap; }
+.tab { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0; background: transparent; color: var(--muted); margin-bottom: -1px; max-width: 220px; }
+.tab:hover { color: var(--text); background: var(--raised); }
+.tab.active { color: var(--text); background: var(--bg); border-color: var(--line-2); }
+.tab-num { width: 22px; height: 22px; flex: none; border-radius: 5px; background: var(--raised); display: grid; place-items: center; font-family: var(--mono); font-size: 12px; font-weight: 600; }
+.tab.active .tab-num { background: var(--accent); color: var(--accent-ink); }
+.tab-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab-bus { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: none; }
+.tab-add { display: inline-flex; gap: 6px; margin-left: auto; padding-bottom: 6px; }
+.tab-add .select { width: 130px; }
+
 /* the Keyboard 6040, after Märklin's product photo: a black face plate on a light grey
    body, two rows of 8 key pairs */
 .k6040 { align-self: flex-start; max-width: 100%; overflow-x: auto; background: #D9DADC; border-radius: 14px; padding: 14px 14px 10px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
@@ -142,3 +154,25 @@ button { cursor: default; }
 
 .toast { position: fixed; bottom: 44px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; transition: .2s; background: var(--raised); border: 1px solid var(--line-2); padding: 10px 16px; border-radius: 8px; pointer-events: none; }
 .toast.show { opacity: 1; transform: translateX(-50%); }
+
+/* the same turnout in other programs */
+.addresses { border-top: 1px solid var(--line); padding-top: 12px; }
+.addr-title { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+.addr { border-collapse: collapse; font-size: 13px; }
+.addr th { text-align: left; font-weight: 400; color: var(--text-2); padding: 4px 18px 4px 0; }
+.addr td { padding: 4px 14px 4px 0; font-family: var(--mono); min-width: 54px; }
+.addr td.h { font-family: var(--sans); color: var(--dim); font-size: 12px; }
+.addr b { color: var(--accent); font-weight: 600; }
+.addresses .hint { margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+/* the Keyboard picture and the key pair panel side by side, below each other when narrow */
+.work { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+.work .inspector { flex: 1 1 420px; max-width: 600px; }
+
+/* the Settings window */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: grid; place-items: center; z-index: 10; }
+.sheet { width: 460px; max-height: calc(100vh - 80px); overflow-y: auto; background: var(--panel); border: 1px solid var(--line-2); border-radius: 12px; padding: 20px 22px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.sheet h2 { margin: 0 0 8px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--dim); }
+.sheet-foot { display: flex; justify-content: flex-end; }
+.addr th.h { color: var(--dim); font-size: 12px; }
+.addr th .muted { font-size: 11px; margin-left: 4px; }

@@ -15,11 +15,13 @@ LocoNet 6040 Studio is the setup program for [Marklin-6040-LocoNet](https://gith
 ## What it does
 
 - **Your Keyboards as you know them:** each Keyboard 6040 with its 16 key pairs in two rows of 8, red above green, numbered as on the Keyboard.
+- **One tab per Keyboard**, above the picture, with **+ Add** for the next one.
 - **Click a key pair and choose:** it switches a turnout (1 to 2048), it shows a track section (red occupied, green free), or it does nothing. Give it a name, such as "Entry track 1", so you still know what it was for next year.
 - **Read from Nano:** takes over the setup that is on the Nano now.
 - **Send to Nano:** puts your setup on the Nano and then reads it back to check that the Nano really has it.
 - **Save and open** your setup as a file on the computer, with all its names. That is also your backup: if a Nano is replaced, open the file and send it to the new one.
-- **Settings of the Nano:** automatic numbering, coil time, no keys without track power, and the others, with a plain explanation for each.
+- **Rocrail's MADA, PADA and FADA explained:** for every turnout the Studio shows the same turnout as the Intellibox numbers it and as Rocrail's three ways of writing it, exactly as you fill them in Rocrail's Address, Port and Gate fields. PADA is the easiest: Address 0, and the turnout number as Port.
+- **Settings** (top right): the layout's name and the settings of the Nano (automatic numbering, coil time, no keys without track power, and the others), each with a plain explanation.
 - **Export backup:** the setup as the list of commands the Nano understands, the same text as its `backup` command, to keep or to type in on the Serial Monitor.
 - **Export KeyMap.h:** the setup as a file for the Arduino IDE, for those who load the program themselves.
 
@@ -28,7 +30,7 @@ LocoNet 6040 Studio is the setup program for [Marklin-6040-LocoNet](https://gith
 1. Connect the Nano with its USB cable.
 2. Start LocoNet 6040 Studio. At the top right, choose the Nano's USB port (press **Refresh** if it is not in the list).
 3. Press **Read from Nano** to start from what the Nano has now, or start with an empty layout.
-4. On the left, choose a Keyboard or add one. Its number is the one set with the four switches on the back of the Keyboard (0 to 15).
+4. Choose a Keyboard with the tabs above the picture, or add one with **+ Add**. Its number is the one set with the four switches on the back of the Keyboard (0 to 15).
 5. Choose **Own assignment**, click a key pair and choose what it does. The key pairs are numbered as on the Keyboard: 1 to 8 in the top row, 9 to 16 in the bottom row.
 6. Press **Send to Nano**. The Studio tells you when the Nano has the setup.
 7. **Save** the layout (File → Save) to keep it.
