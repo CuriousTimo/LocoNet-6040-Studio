@@ -233,7 +233,7 @@ function renderMain() {
     return `${renderTabs()}<div class="empty">Add a Keyboard with <b>+ Add</b> above, or choose <b>Read from Nano</b> to take over the setup of your Nano.</div>`;
   }
   // As on the real Keyboard 6040: two rows of 8 key pairs, 1 to 8 on top, 9 to 16 below;
-  // each pair is a red key with its red LED above it to the right, its number, and a green
+  // each pair is a red key with its red LED centered above it, its number, and a green
   // key. The LED is lit for thrown (red) and off for closed (green); here it is off, as
   // the Studio does not know the turnouts' positions.
   const pairs = [0, 1]

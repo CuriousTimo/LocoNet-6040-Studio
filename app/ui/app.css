@@ -134,10 +134,10 @@ button { cursor: default; }
 .pair.sel { border-color: var(--accent); background: rgba(245,184,61,.10); }
 .key { width: 30px; height: 12px; border-radius: 3px; box-shadow: inset 0 -2px 0 rgba(0,0,0,.3); }
 .key.red { background: #E2322A; }
-/* the red LED above each red key, to the right, as on the real Keyboard: lit for thrown */
+/* the red LED centered above each red key, as on the real Keyboard: lit for thrown */
 .key-wrap { position: relative; display: block; }
 .key-wrap .key { display: block; }
-.led { position: absolute; top: -11px; right: -7px; width: 8px; height: 8px; border-radius: 50%; background: #6B2520; box-shadow: inset 0 1px 1px rgba(0,0,0,.45), 0 0 0 1px #2A0E0C; }
+.led { position: absolute; top: -12px; left: 50%; margin-left: -4px; width: 8px; height: 8px; border-radius: 50%; background: #6B2520; box-shadow: inset 0 1px 1px rgba(0,0,0,.45), 0 0 0 1px #2A0E0C; }
 .led.on { background: #FF3B2F; box-shadow: 0 0 6px 1px rgba(255,59,47,.7); }
 .key.green { background: #3E8E62; }
 .pair .no { font-size: 11px; color: #E7E9EC; line-height: 1; }
